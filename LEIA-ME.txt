@@ -1,0 +1,55 @@
+ALMOX 3.0 - GUIA DE ATUALIZAÇÃO E EXECUÇÃO
+
+PARA VOCÊ, QUE JÁ ESTÁ USANDO A VERSÃO 2:
+1. Encerre npm start com Ctrl+C. Guarde uma cópia da pasta antiga e exporte o banco no MySQL Workbench, se quiser conservar os registros anteriores.
+2. Extraia o ZIP novo em outra pasta. Copie seu arquivo .env antigo para a pasta nova, ao lado de package.json. Não copie a pasta node_modules antiga.
+3. Abra no Workbench o arquivo SEPARADO Almox_Atualizar_V2_Para_V3.txt (ou copie todo seu conteúdo para uma aba SQL). Execute o script completo uma única vez. Ele apaga produtos e movimentações das bases almox e almox_testes e cria o modelo V3. Não preserva o estoque antigo, conforme solicitado. A conta admin é o único cadastro inicial.
+   Se você usa outro nome de banco, substitua as instruções CREATE DATABASE e USE com cuidado, mantendo uma base exclusiva terminada em _testes para testes.
+   Se a base já possuir usuarios, a limpeza será recusada. Não ignore erros: guarde a mensagem.
+4. Na pasta nova, rode:
+   npm ci
+   npm run build
+   npm start
+5. Abra o endereço indicado no terminal (normalmente http://localhost:3000). NÃO use Go Live e NÃO abra index.html diretamente.
+
+INSTALAÇÃO NOVA, SEM BANCO ANTERIOR:
+Use Almox_Banco_MySQL.txt em vez do script de atualização. Os dois arquivos são alternativas: não execute ambos na mesma base. Nenhum arquivo SQL/banco está dentro do ZIP do site.
+
+CONFIGURAÇÃO .env (nome exato, sem .txt, junto de package.json):
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=almox
+DB_USER=root
+DB_PASSWORD=
+PORT=3000
+
+Sua porta do MySQL continua 3306. PORT=3000 é a porta do site. DB_PASSWORD= vazio é a configuração do seu MySQL sem senha.
+Requisitos: Node >=22.13, MySQL >=8.0.16. O servidor escuta somente neste computador (127.0.0.1).
+
+ACESSO INICIAL:
+E-mail: admin@almox.est
+Senha: #adm321
+Funcionários usam "Primeiro acesso? Cadastre-se". Todos os novos cadastros são funcionários, mesmo que escrevam Administrador no campo cargo. Cargo e permissão são coisas diferentes.
+
+IDADE AUTOMÁTICA:
+A idade fica salva em usuarios.idade. O servidor atualiza a cada minuto e ao consultar a sessão/equipe. O banco também possui evento diário atualizar_idades para meia-noite de Brasília (03:00 UTC).
+Para o evento funcionar com o site fechado, execute no Workbench com conta administrativa:
+SET GLOBAL event_scheduler = ON;
+SHOW VARIABLES LIKE 'event_scheduler';
+Para manter após reiniciar o MySQL, configure event_scheduler=ON na seção [mysqld] do my.ini, ou utilize a configuração persistente oferecida por sua instalação. Sem agendador, a idade é corrigida assim que o servidor é iniciado/acessado. Com MySQL desligado, nenhum evento pode executar; o próximo acesso corrige a idade.
+
+VALORES:
+produtos.preco é DECIMAL(10,2) em REAIS: 20.00 significa vinte reais. O site apresenta R$20,00. Para consultar o valor com símbolo e vírgula:
+SELECT nome,preco,preco_formatado FROM produtos_formatados;
+Nomes são texto legível. UUIDs são chaves internas, não são criptografia. Somente senhas são armazenadas como hash com salt.
+
+TESTES (NUNCA NA BASE REAL):
+Copie .env.test.example para .env.test e confirme DB_NAME=almox_testes.
+npm test
+npm run test:integration
+npx playwright install chromium
+npm run test:system
+Os testes de integração e sistema APAGAM dados da base de testes e criam registros fictícios. O nome deve terminar em _testes; jamais dê esse sufixo à base real. Feche outra execução de testes antes de começar. O teste de sistema inicia um servidor próprio em 3101, não precisa de npm start.
+A evidência da execução desta entrega está em evidencias-testes.txt e evidencias/. Aceitação por outro grupo deve ser registrada por esse grupo, no formulário da documentação.
+
+Consulte Documentacao_Almox_V3.pdf e Documentacao_Almox_V3.md para regras, modelo de dados, permissões, transações e casos de teste em tabelas.

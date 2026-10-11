@@ -1,0 +1,281 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> almox-mysql@3.0.0 test
+> node --experimental-strip-types --test tests/unit.test.mjs tests/service.test.mjs
+
+✔ TU04 transação faz rollback e libera conexão após falha (1.426801ms)
+✔ TU05 senha utiliza salt e hash, não texto puro (128.408059ms)
+✔ TU01 preço em reais: mínimo, zero e casas decimais (1.663277ms)
+✔ TU02 quantidade positiva, saída exata e excesso (0.540044ms)
+✔ TU03 idade no aniversário, CPF e cadastro inválido (1.850259ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 277.43646
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> almox-mysql@3.0.0 test:integration
+> node --env-file-if-exists=.env.test --experimental-strip-types --test tests/mysql.test.mjs
+
+.env.test not found. Continuing without it.
+.env.test not found. Continuing without it.
+✔ TI01 persistência em reais, chave estrangeira e autenticação (78.449929ms)
+✔ TI02 falha real de INSERT desfaz atualização do saldo (19.155799ms)
+✔ TI03 concorrência, edição reversível e exclusão com nome preservado (19.165148ms)
+✔ TI04 funcionário, auditoria, reversão, idade e revogação da sessão (100.837588ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 390.21242
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> almox-mysql@3.0.0 test:system
+> node --env-file-if-exists=.env.test --experimental-strip-types --test tests/system.test.mjs
+
+.env.test not found. Continuing without it.
+.env.test not found. Continuing without it.
+Almox: http://localhost:3101 | Banco MySQL: almox_testes
+✖ TS01 login obrigatório e cadastro com validações (330.65938ms)
+✖ TS02 produto em reais, saída inválida e limite exato (0.606744ms)
+✖ TS03 edição, reversão e exclusão preservando histórico (0.123587ms)
+✖ TS04 administrador altera e exclui funcionário com auditoria (0.039089ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 0
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 738.772503
+
+✖ failing tests:
+
+test at tests/system.test.mjs:6:1
+✖ TS01 login obrigatório e cadastro com validações (330.65938ms)
+  browserType.launch: Target page, context or browser has been closed
+  Browser logs:
+  
+  <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window
+  <launched> pid=168
+  [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)
+  [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)
+  [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  Call log:
+  [2m  - <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window[22m
+  [2m  - <launched> pid=168[22m
+  [2m  - [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)[22m
+  [2m  - [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)[22m
+  [2m  - [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168] <gracefully close start>[22m
+  [2m  - [pid=168] <kill>[22m
+  [2m  - [pid=168] <will force kill>[22m
+  [2m  - [pid=168] <process did exit: exitCode=null, signal=SIGABRT>[22m
+  [2m  - [pid=168] starting temporary directories cleanup[22m
+  [2m  - [pid=168] finished temporary directories cleanup[22m
+  [2m  - [pid=168] <gracefully close end>[22m
+  
+      at TestContext.<anonymous> (/workspace/scratch/f168ea01123f/almox-v3/almox-mysql/tests/system.test.mjs:4:518) {
+    log: [ '  - <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window', '  - <launched> pid=168', '  - [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)', '  - [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)', '  - [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168] <gracefully close start>', '  - [pid=168] <kill>', '  - [pid=168] <will force kill>', '  - [pid=168] <process did exit: exitCode=null, signal=SIGABRT>', '  - [pid=168] starting temporary directories cleanup', '  - [pid=168] finished temporary directories cleanup', '  - [pid=168] <gracefully close end>' ]
+  }
+
+test at tests/system.test.mjs:7:1
+✖ TS02 produto em reais, saída inválida e limite exato (0.606744ms)
+  browserType.launch: Target page, context or browser has been closed
+  Browser logs:
+  
+  <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window
+  <launched> pid=168
+  [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)
+  [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)
+  [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  Call log:
+  [2m  - <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window[22m
+  [2m  - <launched> pid=168[22m
+  [2m  - [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)[22m
+  [2m  - [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)[22m
+  [2m  - [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168] <gracefully close start>[22m
+  [2m  - [pid=168] <kill>[22m
+  [2m  - [pid=168] <will force kill>[22m
+  [2m  - [pid=168] <process did exit: exitCode=null, signal=SIGABRT>[22m
+  [2m  - [pid=168] starting temporary directories cleanup[22m
+  [2m  - [pid=168] finished temporary directories cleanup[22m
+  [2m  - [pid=168] <gracefully close end>[22m
+  
+      at TestContext.<anonymous> (/workspace/scratch/f168ea01123f/almox-v3/almox-mysql/tests/system.test.mjs:4:518) {
+    log: [ '  - <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window', '  - <launched> pid=168', '  - [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)', '  - [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)', '  - [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168] <gracefully close start>', '  - [pid=168] <kill>', '  - [pid=168] <will force kill>', '  - [pid=168] <process did exit: exitCode=null, signal=SIGABRT>', '  - [pid=168] starting temporary directories cleanup', '  - [pid=168] finished temporary directories cleanup', '  - [pid=168] <gracefully close end>' ]
+  }
+
+test at tests/system.test.mjs:8:1
+✖ TS03 edição, reversão e exclusão preservando histórico (0.123587ms)
+  browserType.launch: Target page, context or browser has been closed
+  Browser logs:
+  
+  <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window
+  <launched> pid=168
+  [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)
+  [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)
+  [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  Call log:
+  [2m  - <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window[22m
+  [2m  - <launched> pid=168[22m
+  [2m  - [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)[22m
+  [2m  - [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)[22m
+  [2m  - [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168] <gracefully close start>[22m
+  [2m  - [pid=168] <kill>[22m
+  [2m  - [pid=168] <will force kill>[22m
+  [2m  - [pid=168] <process did exit: exitCode=null, signal=SIGABRT>[22m
+  [2m  - [pid=168] starting temporary directories cleanup[22m
+  [2m  - [pid=168] finished temporary directories cleanup[22m
+  [2m  - [pid=168] <gracefully close end>[22m
+  
+      at TestContext.<anonymous> (/workspace/scratch/f168ea01123f/almox-v3/almox-mysql/tests/system.test.mjs:4:518) {
+    log: [ '  - <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window', '  - <launched> pid=168', '  - [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)', '  - [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)', '  - [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168] <gracefully close start>', '  - [pid=168] <kill>', '  - [pid=168] <will force kill>', '  - [pid=168] <process did exit: exitCode=null, signal=SIGABRT>', '  - [pid=168] starting temporary directories cleanup', '  - [pid=168] finished temporary directories cleanup', '  - [pid=168] <gracefully close end>' ]
+  }
+
+test at tests/system.test.mjs:9:1
+✖ TS04 administrador altera e exclui funcionário com auditoria (0.039089ms)
+  browserType.launch: Target page, context or browser has been closed
+  Browser logs:
+  
+  <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window
+  <launched> pid=168
+  [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)
+  [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)
+  [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)
+  Call log:
+  [2m  - <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window[22m
+  [2m  - <launched> pid=168[22m
+  [2m  - [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)[22m
+  [2m  - [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)[22m
+  [2m  - [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)[22m
+  [2m  - [pid=168] <gracefully close start>[22m
+  [2m  - [pid=168] <kill>[22m
+  [2m  - [pid=168] <will force kill>[22m
+  [2m  - [pid=168] <process did exit: exitCode=null, signal=SIGABRT>[22m
+  [2m  - [pid=168] starting temporary directories cleanup[22m
+  [2m  - [pid=168] finished temporary directories cleanup[22m
+  [2m  - [pid=168] <gracefully close end>[22m
+  
+      at TestContext.<anonymous> (/workspace/scratch/f168ea01123f/almox-v3/almox-mysql/tests/system.test.mjs:4:518) {
+    log: [ '  - <launching> /root/.cache/ms-playwright/chromium-1161/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-BWvL8T --remote-debugging-pipe --no-startup-window', '  - <launched> pid=168', '  - [pid=168][err] [168:168:1009/230401.913542:FATAL:process_singleton_posix.cc(292)] Check failed: . socket() failed: Operation not permitted (1)', '  - [pid=168][err] [1009/230401.913838:ERROR:scoped_ptrace_attach.cc(27)] ptrace: Operation not permitted (1)', '  - [pid=168][err] [1009/230401.914073:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914082:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914085:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914091:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914094:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914098:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914151:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914153:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914156:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914158:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914161:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914173:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914175:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168][err] [1009/230401.914177:ERROR:exception_handler_server.cc(143)] tgkill: No such process (3)', '  - [pid=168] <gracefully close start>', '  - [pid=168] <kill>', '  - [pid=168] <will force kill>', '  - [pid=168] <process did exit: exitCode=null, signal=SIGABRT>', '  - [pid=168] starting temporary directories cleanup', '  - [pid=168] finished temporary directories cleanup', '  - [pid=168] <gracefully close end>' ]
+  }
+Traceback (most recent call last):
+  File "/tmp/run-almox-tests.py", line 15, in <module>
+    subprocess.run(['npm','run','test:system'],env=env,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['npm', 'run', 'test:system']' returned non-zero exit status 1.
