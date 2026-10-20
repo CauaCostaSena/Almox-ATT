@@ -1,55 +1,102 @@
-ALMOX 3.0 - GUIA DE ATUALIZAÇÃO E EXECUÇÃO
+ALMOX 3.2 — ATUALIZAÇÃO A PARTIR DAS ANOTAÇÕES DA EQUIPE
 
-PARA VOCÊ, QUE JÁ ESTÁ USANDO A VERSÃO 2:
-1. Encerre npm start com Ctrl+C. Guarde uma cópia da pasta antiga e exporte o banco no MySQL Workbench, se quiser conservar os registros anteriores.
-2. Extraia o ZIP novo em outra pasta. Copie seu arquivo .env antigo para a pasta nova, ao lado de package.json. Não copie a pasta node_modules antiga.
-3. Abra no Workbench o arquivo SEPARADO Almox_Atualizar_V2_Para_V3.txt (ou copie todo seu conteúdo para uma aba SQL). Execute o script completo uma única vez. Ele apaga produtos e movimentações das bases almox e almox_testes e cria o modelo V3. Não preserva o estoque antigo, conforme solicitado. A conta admin é o único cadastro inicial.
-   Se você usa outro nome de banco, substitua as instruções CREATE DATABASE e USE com cuidado, mantendo uma base exclusiva terminada em _testes para testes.
-   Se a base já possuir usuarios, a limpeza será recusada. Não ignore erros: guarde a mensagem.
-4. Na pasta nova, rode:
+PARA ATUALIZAR O ALMOX 3.1 QUE JÁ TEM DADOS
+1. Pare o site com Ctrl+C. Faça uma cópia de segurança do banco no Workbench.
+2. Extraia o ZIP 3.2 em outra pasta. Abra no VS Code a pasta com package.json.
+3. No terminal, execute um comando de cada vez:
    npm ci
+   npm run setup:env
+4. Copie a configuração de conexão da versão anterior para o .env desta pasta.
+   O nome do arquivo é exatamente .env, ao lado de package.json.
+   Não altere apenas .env.example: esse arquivo é o modelo.
+
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_NAME=almox
+   DB_USER=root
+   DB_PASSWORD=
+   PORT=3000
+
+   Use o nome exato do banco que você já utiliza (por exemplo almox_v3).
+   DB_PASSWORD= fica vazio somente se seu MySQL realmente não tiver senha.
+5. Com o MySQL ativo, execute:
+   npm run db:setup
    npm run build
    npm start
-5. Abra o endereço indicado no terminal (normalmente http://localhost:3000). NÃO use Go Live e NÃO abra index.html diretamente.
+6. Abra http://localhost:3000. Não use Go Live nem abra index.html diretamente.
 
-INSTALAÇÃO NOVA, SEM BANCO ANTERIOR:
-Use Almox_Banco_MySQL.txt em vez do script de atualização. Os dois arquivos são alternativas: não execute ambos na mesma base. Nenhum arquivo SQL/banco está dentro do ZIP do site.
+O db:setup adiciona cidade/bairro, e-mail de autoria e referência do histórico.
+Ele não apaga produtos, funcionários ou movimentações. Registros antigos ficam
+sem cidade/bairro até o administrador preenchê-los. O comando também recupera
+a conta principal e encerra suas sessões para exigir um novo login.
 
-CONFIGURAÇÃO .env (nome exato, sem .txt, junto de package.json):
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_NAME=almox
-DB_USER=root
-DB_PASSWORD=
-PORT=3000
-
-Sua porta do MySQL continua 3306. PORT=3000 é a porta do site. DB_PASSWORD= vazio é a configuração do seu MySQL sem senha.
-Requisitos: Node >=22.13, MySQL >=8.0.16. O servidor escuta somente neste computador (127.0.0.1).
-
-ACESSO INICIAL:
+ACESSO ADMINISTRATIVO
+Na tela de login, use Acesso do administrador.
 E-mail: admin@almox.est
-Senha: #adm321
-Funcionários usam "Primeiro acesso? Cadastre-se". Todos os novos cadastros são funcionários, mesmo que escrevam Administrador no campo cargo. Cargo e permissão são coisas diferentes.
+Senha: admin$777
+Após entrar, aparecem Funcionários e Movimentações de admin.
+Uma conta comum não passa a ser admin ao digitar Administrador no cargo.
 
-IDADE AUTOMÁTICA:
-A idade fica salva em usuarios.idade. O servidor atualiza a cada minuto e ao consultar a sessão/equipe. O banco também possui evento diário atualizar_idades para meia-noite de Brasília (03:00 UTC).
-Para o evento funcionar com o site fechado, execute no Workbench com conta administrativa:
-SET GLOBAL event_scheduler = ON;
-SHOW VARIABLES LIKE 'event_scheduler';
-Para manter após reiniciar o MySQL, configure event_scheduler=ON na seção [mysqld] do my.ini, ou utilize a configuração persistente oferecida por sua instalação. Sem agendador, a idade é corrigida assim que o servidor é iniciado/acessado. Com MySQL desligado, nenhum evento pode executar; o próximo acesso corrige a idade.
+Se a conta principal ainda não entrar, na pasta 3.2 rode:
+   npm run admin:reset
+Esse comando recupera somente a conta principal e não apaga dados.
+Se houver outro cadastro usando admin@almox.est, ele informa o conflito em vez
+de promover esse funcionário automaticamente. Nesse caso o cadastro conflitante
+precisa ser revisado pelo responsável no MySQL antes de repetir o comando.
 
-VALORES:
-produtos.preco é DECIMAL(10,2) em REAIS: 20.00 significa vinte reais. O site apresenta R$20,00. Para consultar o valor com símbolo e vírgula:
-SELECT nome,preco,preco_formatado FROM produtos_formatados;
-Nomes são texto legível. UUIDs são chaves internas, não são criptografia. Somente senhas são armazenadas como hash com salt.
+INSTALAÇÃO NOVA
+Instale Node.js 24 e MySQL 8.0.16 ou superior, depois siga os passos acima.
+O db:setup cria o banco indicado em DB_NAME e a conta principal.
+Alternativa: execute no Workbench o arquivo separado Almox_Banco_MySQL_3_2.txt,
+que cria almox e almox_testes. Ele serve para instalação nova, não para migrar
+uma estrutura antiga. Não contém produtos ou funcionários de demonstração.
+O arquivo de banco completo é entregue separado do ZIP do site.
+database/schema.sql é apenas a estrutura utilizada pelo preparador do projeto.
 
-TESTES (NUNCA NA BASE REAL):
-Copie .env.test.example para .env.test e confirme DB_NAME=almox_testes.
-npm test
-npm run test:integration
-npx playwright install chromium
-npm run test:system
-Os testes de integração e sistema APAGAM dados da base de testes e criam registros fictícios. O nome deve terminar em _testes; jamais dê esse sufixo à base real. Feche outra execução de testes antes de começar. O teste de sistema inicia um servidor próprio em 3101, não precisa de npm start.
-A evidência da execução desta entrega está em evidencias-testes.txt e evidencias/. Aceitação por outro grupo deve ser registrada por esse grupo, no formulário da documentação.
+O QUE MUDOU
+- CPF e telefone com máscara; no banco permanecem apenas os dígitos.
+- CPF fictício permitido: 11 números e sem repetição entre funcionários.
+- Data futura recusada; idade mínima continua sendo 16 anos.
+- Cidade em lista vinculada à UF; bairro informado no formulário.
+- DDD sugere UF; ao escolher UF o formulário sugere um DDD, que pode ser editado.
+  Como uma UF pode ter vários DDDs, confira a região antes de salvar.
+  DDD 61 atende DF e parte de GO: não há escolha automática se a UF estiver vazia.
+- Busca sem resultado mostra a mensagem correta e um botão Limpar busca.
+- Ações novas no histórico identificam o autor pelo e-mail.
+- Exclusão de PRODUTO exige senha: #DeleAll42 (além da confirmação vermelha).
+  Exclusão de funcionário continua restrita ao admin, com confirmação.
+- Aba Resultados com Vendas e receita e Estoque e entradas.
 
-Consulte Documentacao_Almox_V3.pdf e Documentacao_Almox_V3.md para regras, modelo de dados, permissões, transações e casos de teste em tabelas.
+REGRAS DO PAINEL RESULTADOS
+Todas as saídas são consideradas vendas para esta atividade.
+A receita usa preço e quantidade registrados na saída; não muda ao editar o
+preço atual do produto. Não é lucro líquido, pois não há campo de custo.
+As entradas somam recebimentos e o saldo inicial de cadastros no mês escolhido.
+O valor em estoque usa preço atual vezes saldo atual, independente do mês.
+Datas dos gráficos usam horário de Brasília. Cadastros antigos já excluídos,
+sem referência preservada, só podem ser agrupados pelo nome que restou no log.
+
+E-MAIL EM REGISTROS ANTIGOS
+A migração recupera o e-mail atual do autor quando a conta ainda existe.
+Se a conta já foi apagada, o log mostra o nome antigo e informa a ausência de
+e-mail. A partir desta versão, o e-mail fica preservado na própria movimentação.
+
+SENHA DE EXCLUSÃO
+O padrão solicitado é #DeleAll42. Não confundir com a senha de login do admin.
+Se for configurá-la no .env, use aspas por causa do caractere #:
+   PRODUCT_DELETE_PASSWORD="#DeleAll42"
+
+VERIFICAÇÃO DESTA ATUALIZAÇÃO
+   npm run test:changes
+Executa somente as verificações novas/corrigidas de 3.2, sem MySQL real.
+Não foi reexecutada a suíte das funcionalidades aprovadas pela equipe.
+O relatório docs/Atualizacao_3_2.md detalha observações, alterações e limites.
+
+PARA ABRIR OUTRO DIA
+Inicie o MySQL, abra o terminal desta pasta e execute npm start.
+Não repita db:setup apenas para abrir: ele redefine o acesso administrativo.
+
+LOCALIZAÇÃO
+Lista de municípios do IBGE incluída no projeto, consultada em 17/10/2026.
+O cadastro não depende de acesso à internet para carregar cidades.
+O bairro tem validação de formato; não há verificação oficial de existência.

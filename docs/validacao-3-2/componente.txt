@@ -1,0 +1,4 @@
+Almox 3.2.0 — 17/10/2026
+Renderização estática React da nova aba Resultados: concluída.
+Gráfico, rankings e tabela diária presentes no HTML gerado.
+Esta verificação não usa navegador e não comprova aparência ou interação visual.

@@ -1,6 +1,6 @@
 {
   "name": "almox-mysql",
-  "version": "3.0.0",
+  "version": "3.2.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -13,7 +13,12 @@
     "test": "node --experimental-strip-types --test tests/unit.test.mjs tests/service.test.mjs",
     "test:integration": "node --env-file-if-exists=.env.test --experimental-strip-types --test tests/mysql.test.mjs",
     "test:system": "node --env-file-if-exists=.env.test --experimental-strip-types --test tests/system.test.mjs",
-    "test:acceptance": "node --env-file-if-exists=.env --experimental-strip-types --test tests/acceptance.test.mjs"
+    "test:acceptance": "node --env-file-if-exists=.env.test --experimental-strip-types --test tests/acceptance.test.mjs",
+    "setup:env": "node server/init-env.mjs",
+    "db:setup": "node --env-file=.env server/setup-db.mjs",
+    "db:setup:test": "node --env-file=.env.test server/setup-db.mjs",
+    "admin:reset": "node --env-file=.env server/reset-admin.mjs",
+    "test:changes": "node --experimental-strip-types --test tests/changes-3-2.test.mjs"
   },
   "dependencies": {
     "class-variance-authority": "0.7.1",

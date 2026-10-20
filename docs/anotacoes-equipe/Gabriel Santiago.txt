@@ -1,0 +1,8 @@
+Alterações sugeridas:
+Na hora do cadastro quando for colocar o ddd no campo do número o estado vai automaticamente e vice versa para automatizar o tempo na hora do login.
+
+TI03 – Saídas simultâneas
+Resultado obtido: O sistema processou com sucesso a primeira solicitação de saída e recusou a segunda tentativa efetuada no mesmo instante, mantendo o saldo final correto e sem permitir valores negativos.   Situação: Aprovado.
+
+TI02 - Operações Atômicas
+Resultado obtido: Ao ocorrer a falha provocada na gravação do histórico, o sistema desfez a operação (rollback) e manteve o saldo do produto exatamente igual ao estado inicial. Situação Aprovado.

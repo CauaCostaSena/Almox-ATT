@@ -1,2 +1,0 @@
-SQL aprovado: Almox_Banco_MySQL.txt
-SQL aprovado: Almox_Atualizar_V2_Para_V3.txt

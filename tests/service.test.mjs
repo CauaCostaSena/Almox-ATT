@@ -1,3 +1,26 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {transaction} from '../server/db.mjs';import {hashPassword,verifyPassword} from '../server/auth.mjs';
-test('TU04 transação faz rollback e libera conexão após falha',async()=>{const calls=[];const c={query:async()=>{},beginTransaction:async()=>calls.push('begin'),commit:async()=>calls.push('commit'),rollback:async()=>calls.push('rollback'),release:()=>calls.push('release')};await assert.rejects(transaction({getConnection:async()=>c},async()=>{throw Error('falha')}));assert.deepEqual(calls,['begin','rollback','release']);});
-test('TU05 senha utiliza salt e hash, não texto puro',async()=>{const hash=await hashPassword('#adm321');assert.notEqual(hash,'#adm321');assert.equal(await verifyPassword('#adm321',hash),true);assert.equal(await verifyPassword('errada',hash),false)});
+import test from "node:test";
+import assert from "node:assert/strict";
+import { transaction } from "../server/db.mjs";
+import { hashPassword, verifyPassword } from "../server/auth.mjs";
+test("TU04 transação faz rollback e libera conexão após falha", async () => {
+  const calls = [];
+  const c = {
+    query: async () => {},
+    beginTransaction: async () => calls.push("begin"),
+    commit: async () => calls.push("commit"),
+    rollback: async () => calls.push("rollback"),
+    release: () => calls.push("release"),
+  };
+  await assert.rejects(
+    transaction({ getConnection: async () => c }, async () => {
+      throw Error("falha");
+    }),
+  );
+  assert.deepEqual(calls, ["begin", "rollback", "release"]);
+});
+test("TU05 senha utiliza salt e hash, não texto puro", async () => {
+  const hash = await hashPassword("#adm321");
+  assert.notEqual(hash, "#adm321");
+  assert.equal(await verifyPassword("#adm321", hash), true);
+  assert.equal(await verifyPassword("errada", hash), false);
+});
