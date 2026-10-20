@@ -1,0 +1,30 @@
+Almox 3.2.0 — 17/10/2026
+Comando: npm run test:changes
+Codigo de saida: 0
+Persistencia: conexoes simuladas, sem MySQL real.
+
+
+> almox-mysql@3.2.0 test:changes
+> node --experimental-strip-types --test tests/changes-3-2.test.mjs
+
+✔ ALT01 CPF e telefone recebem a máscara solicitada (1.532198ms)
+✔ ALT02 CPF fictício é aceito como 11 números e fica normalizado (1.744794ms)
+✔ ALT03 nascimento futuro recebe recusa específica (0.63463ms)
+✔ ALT04 cidade pertence à UF e bairro é validado (0.648501ms)
+✔ ALT05 sugestão DDD e UF evita suposição no DDD compartilhado 61 (0.325001ms)
+✔ ALT06 busca tolera espaços e acentos e retorna vazio corretamente (1.064657ms)
+✔ ALT07 senha de exclusão é exigida também no serviço (0.949707ms)
+✔ ALT08 exclusão autorizada preserva o e-mail e referência do produto (0.809318ms)
+✔ ALT09 novo cadastro transmite cidade bairro e e-mail à persistência (43.720433ms)
+✔ ALT10 recuperação define conta principal e senha exigida sem promover outro cadastro (90.040518ms)
+✔ ALT11 painéis usam preço da saída, referência preservada e mês em Brasília (20.454004ms)
+✔ ALT12 edição de funcionário inclui nova localização e e-mail do autor (1.23606ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 382.988342
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.

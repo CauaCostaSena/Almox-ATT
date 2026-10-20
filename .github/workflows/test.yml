@@ -1,0 +1,39 @@
+name: Validar Almox
+on: [push, pull_request]
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: almox_ci_only
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -palmox_ci_only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: almox_ci_only
+      DB_NAME: almox_testes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: node server/setup-db.mjs
+      - run: npm run test:integration
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:system
+      - run: npm run test:acceptance
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resultados-interface
+          path: test-results/

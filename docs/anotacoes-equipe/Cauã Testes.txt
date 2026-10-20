@@ -1,0 +1,29 @@
+CE01 Acesso sem Login:
+
+Resultado: Não é possível entrar diretamente na tela de estoque sem passar pela tela de login. 
+
+CE02 Cadastro válido:
+
+Resultado: Sucesso ao cadastrar um usuário e quando vou logar com as mesmas credenciais o login também é feito com sucesso. APROVADO
+
+CE03 Cadastro inválido
+Resultado: Não é possível cadastrar um usuário com nome de números ou caracteres especiais, nem localização incorreta. APROVADO
+
+
+Adicionais:
+
+O CPF deve seguir o formato "111.111.111-11", com hífen e pontos.
+
+O telefone deve seguir o modelo (71) 99852-6587, com DDD e separação.
+
+Não deve ser possível colocar uma data de nascimento no futuro, apenas uma data do presente, com base no dia atual.
+
+Permita que CPF's aleatórios possam ser cadastrador, não apenas CPF's reais.
+
+Adicionar cidade e bairro também, ao invés de só estado e país, para deixar a localização mais completa.
+
+Mostrar uma tela de lucros, parecida com o valor em estoque, mas isso vai ser com base nos itens que tiveram movimentação de saída. Seria interessante se você trabalhasse o visual dessa nova "tela", mostrando gráficos dos produtos que mais foram vendidos, os dias do mês, tudo bem detalhado. Faça a mesma coisa com o valor em estoque, mostrando os produtos foram cadastrados/movimentação de entrada. Com animações bem feitas e fluídas.
+
+Na função de excluir um produto, deve aparecer um campo e ser digitado uma senha para realizar essa operação. A senha deve ser "#DeleAll42". O usuário responsável ainda é oque está logado. 
+
+No dentificador do usuário que fez uma ação coloque o e-mail ao invés de só o nome, pois eu cadastrei apenas o primeiro nome, ex: cauã. Mas se tiverem mais de um Cauã não dá para saber qual foi, então coloque o e-mail como identificador de usuário. 

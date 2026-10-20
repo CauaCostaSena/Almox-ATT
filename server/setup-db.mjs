@@ -1,119 +1,27 @@
 import mysql from 'mysql2/promise';
-import {hashPassword} from './auth.mjs';
+import {readFile} from 'node:fs/promises';
+import {resetAdmin} from './admin-account.mjs';
 
-const password = process.env.DB_PASSWORD || '';
-const host = process.env.DB_HOST || '127.0.0.1';
-const port = Number(process.env.DB_PORT || 3306);
-const user = process.env.DB_USER || 'root';
-
-async function setup() {
-  const conn = await mysql.createConnection({
-    host,
-    port,
-    user,
-    password,
-    multipleStatements: true
-  });
-
-  const adminHash = await hashPassword('#adm321');
-
-  for (const dbName of ['almox', 'almox_testes']) {
-    console.log(`Configurando banco ${dbName}...`);
-    await conn.query(`
-      CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-      USE \`${dbName}\`;
-
-      CREATE TABLE IF NOT EXISTS usuarios (
-        id CHAR(36) NOT NULL PRIMARY KEY,
-        nome VARCHAR(100) NOT NULL,
-        cpf CHAR(11) NULL UNIQUE,
-        telefone VARCHAR(11) NULL,
-        email VARCHAR(150) NOT NULL UNIQUE,
-        nascimento DATE NULL,
-        idade SMALLINT NULL,
-        cargo VARCHAR(80) NULL,
-        perfil ENUM('admin','funcionario') NOT NULL DEFAULT 'funcionario',
-        conta_sistema BOOLEAN NOT NULL DEFAULT 0,
-        senha_hash VARCHAR(200) NOT NULL,
-        criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB;
-
-      CREATE TABLE IF NOT EXISTS produtos (
-        id CHAR(36) NOT NULL PRIMARY KEY,
-        nome VARCHAR(100) NOT NULL,
-        preco DECIMAL(10,2) NOT NULL,
-        quantidade INT NOT NULL DEFAULT 0,
-        criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT chk_produto_nome CHECK (CHAR_LENGTH(nome) >= 2 AND CHAR_LENGTH(nome) <= 100),
-        CONSTRAINT chk_produto_preco CHECK (preco > 0 AND preco <= 1000000.00),
-        CONSTRAINT chk_produto_qtd CHECK (quantidade >= 0 AND quantidade <= 1000000)
-      ) ENGINE=InnoDB;
-
-      CREATE TABLE IF NOT EXISTS sessoes (
-        token_hash CHAR(64) NOT NULL PRIMARY KEY,
-        usuario_id CHAR(36) NOT NULL,
-        expira_em DATETIME NOT NULL,
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-      ) ENGINE=InnoDB;
-
-      CREATE TABLE IF NOT EXISTS movimentacoes (
-        sequencia BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        id CHAR(36) NOT NULL UNIQUE,
-        alvo_id CHAR(36) NULL,
-        alvo_nome VARCHAR(100) NOT NULL,
-        usuario_id CHAR(36) NULL,
-        usuario_nome VARCHAR(100) NOT NULL,
-        acao VARCHAR(50) NOT NULL,
-        antes JSON NULL,
-        depois JSON NULL,
-        quantidade INT NULL,
-        observacao VARCHAR(200) NOT NULL DEFAULT '',
-        revertido BOOLEAN NOT NULL DEFAULT 0,
-        criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (alvo_id) REFERENCES produtos(id) ON DELETE SET NULL,
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
-      ) ENGINE=InnoDB;
-
-      CREATE TABLE IF NOT EXISTS auditoria_admin (
-        sequencia BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        id CHAR(36) NOT NULL UNIQUE,
-        alvo_id CHAR(36) NULL,
-        alvo_nome VARCHAR(100) NOT NULL,
-        usuario_id CHAR(36) NULL,
-        usuario_nome VARCHAR(100) NOT NULL,
-        acao VARCHAR(50) NOT NULL,
-        antes JSON NULL,
-        depois JSON NULL,
-        quantidade INT NULL,
-        observacao VARCHAR(200) NOT NULL DEFAULT '',
-        revertido BOOLEAN NOT NULL DEFAULT 0,
-        criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (alvo_id) REFERENCES usuarios(id) ON DELETE SET NULL,
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
-      ) ENGINE=InnoDB;
-
-      CREATE OR REPLACE VIEW produtos_formatados AS
-      SELECT id, nome, preco, CONCAT('R$', REPLACE(FORMAT(preco, 2, 'pt_BR'), '.', ',')) AS preco_formatado, quantidade
-      FROM produtos;
-
-      INSERT INTO usuarios (id, nome, email, perfil, conta_sistema, senha_hash)
-      VALUES (
-        '11111111-1111-1111-1111-111111111111',
-        'Administrador',
-        'admin@almox.est',
-        'admin',
-        1,
-        '${adminHash}'
-      )
-      ON DUPLICATE KEY UPDATE senha_hash='${adminHash}', perfil='admin', conta_sistema=1;
-    `);
-  }
-
-  await conn.end();
-  console.log('Bancos configurados com sucesso!');
-}
-
-setup().catch(err => {
-  console.error('Erro na configuração:', err);
-  process.exit(1);
-});
+// Migração aditiva: rode com o servidor parado e backup prévio.
+const database=process.env.DB_NAME;
+if(!database||!/^[a-zA-Z0-9_]+$/.test(database))throw Error('Configure DB_NAME com letras, números e sublinhado.');
+const conn=await mysql.createConnection({host:process.env.DB_HOST||'127.0.0.1',port:Number(process.env.DB_PORT||3306),user:process.env.DB_USER||'root',password:process.env.DB_PASSWORD??'',multipleStatements:true});
+try{
+ await conn.query(`CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; USE \`${database}\`; SET time_zone = '+00:00';`);
+ await conn.query(await readFile(new URL('../database/schema.sql',import.meta.url),'utf8'));
+ const [columns]=await conn.query('SHOW COLUMNS FROM usuarios');
+ for(const name of ['pais','estado'])if(!columns.some(c=>c.Field===name))await conn.query(`ALTER TABLE usuarios ADD COLUMN ${name} CHAR(2) NULL`);
+ // Localização legada permanece NULL, sem inventar dados de funcionários.
+ for (const [name,type] of [['cidade','VARCHAR(100)'],['bairro','VARCHAR(100)']])if(!columns.some(c=>c.Field===name))await conn.query(`ALTER TABLE usuarios ADD COLUMN ${name} ${type} NULL`);
+ for (const table of ['movimentacoes','auditoria_admin']) {
+  const [cols]=await conn.query(`SHOW COLUMNS FROM ${table}`);
+  for(const [name,type] of [['usuario_email','VARCHAR(150)'],['alvo_ref','CHAR(36)']])if(!cols.some(c=>c.Field===name))await conn.query(`ALTER TABLE ${table} ADD COLUMN ${name} ${type} NULL`);
+  // Recupera somente o e-mail conhecido hoje. Não inventa autoria de conta já apagada.
+  await conn.query(`UPDATE ${table} e JOIN usuarios u ON u.id=e.usuario_id SET e.usuario_email=u.email WHERE e.usuario_email IS NULL`);
+  await conn.query(`UPDATE ${table} SET alvo_ref=alvo_id WHERE alvo_ref IS NULL AND alvo_id IS NOT NULL`);
+ }
+ await resetAdmin(conn);
+ try{await conn.query('CREATE EVENT IF NOT EXISTS atualizar_idades ON SCHEDULE EVERY 1 DAY DO UPDATE usuarios SET idade=TIMESTAMPDIFF(YEAR,nascimento,DATE(UTC_TIMESTAMP()-INTERVAL 3 HOUR)) WHERE nascimento IS NOT NULL');}
+ catch(e){if(e.code==='ER_SPECIFIC_ACCESS_DENIED_ERROR')console.warn('Sem privilégio EVENT: idade será atualizada pelo servidor.');else throw e;}
+ console.log(`Banco ${database} atualizado. Produtos e funcionários preservados. Senha admin redefinida; sessões admin encerradas.`);
+}finally{await conn.end();}

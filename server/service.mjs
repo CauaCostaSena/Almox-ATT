@@ -1,32 +1,382 @@
-import {randomUUID} from 'node:crypto';
-import {transaction} from './db.mjs';
-import {productInput,employeeInput,quantity,balance} from '../lib/rules.ts';
-import {hashPassword,verifyPassword,tokenHash,newToken,today} from './auth.mjs';
-export class InputError extends Error{constructor(message,status=400){super(message);this.status=status;}}
-const fields='id,nome,cpf,telefone,email,nascimento,cargo,idade,perfil,conta_sistema';
-const parsed=v=>typeof v==='string'?JSON.parse(v):v;
-const snap=p=>p?{nome:p.nome,preco:String(p.preco),quantidade:p.quantidade}:null;
-const person=p=>p?Object.fromEntries(['nome','cpf','telefone','email','nascimento','cargo'].map(k=>[k,p[k]])):null;
-export async function updateAges(pool){await pool.query("UPDATE usuarios SET idade=TIMESTAMPDIFF(YEAR,nascimento,DATE(UTC_TIMESTAMP()-INTERVAL 3 HOUR)) WHERE nascimento IS NOT NULL AND idade<>TIMESTAMPDIFF(YEAR,nascimento,DATE(UTC_TIMESTAMP()-INTERVAL 3 HOUR))");}
-export async function sessionUser(pool,token){if(!token)return null;await updateAges(pool);const [r]=await pool.execute(`SELECT ${fields.split(',').map(x=>'u.'+x).join(',')} FROM sessoes s JOIN usuarios u ON u.id=s.usuario_id WHERE s.token_hash=? AND s.expira_em>UTC_TIMESTAMP()`,[tokenHash(token)]);return r[0]??null;}
-export async function register(pool,b){let data,hash;try{data=employeeInput(b,today());hash=await hashPassword(b.senha)}catch(e){throw new InputError(e.message)}return transaction(pool,async c=>{const id=randomUUID();await c.execute('INSERT INTO usuarios(id,nome,cpf,telefone,email,nascimento,cargo,idade,senha_hash) VALUES(?,?,?,?,?,?,?,?,?)',[id,...Object.values(data).slice(0,6),data.idade,hash]);await audit(c,'auditoria_admin',{id,nome:data.nome},id,data.nome,'cadastro',null,data);return {ok:true};});}
-export async function login(pool,b){const [rows]=await pool.execute('SELECT * FROM usuarios WHERE email=?',[String(b.email??'').trim().toLowerCase()]);const u=rows[0];if(!u||!await verifyPassword(b.senha,u.senha_hash))throw new InputError('E-mail ou senha incorretos.',401);const token=newToken();await pool.execute('INSERT INTO sessoes(token_hash,usuario_id,expira_em) VALUES(?,?,UTC_TIMESTAMP()+INTERVAL 8 HOUR)',[tokenHash(token),u.id]);return {token};}
-export async function logout(pool,token){if(token)await pool.execute('DELETE FROM sessoes WHERE token_hash=?',[tokenHash(token)]);return {ok:true};}
-async function audit(c,table,u,id,name,action,before,after,extra={}){await c.execute(`INSERT INTO ${table}(id,alvo_id,alvo_nome,usuario_id,usuario_nome,acao,antes,depois,quantidade,observacao) VALUES(?,?,?,?,?,?,?,?,?,?)`,[randomUUID(),id,name,u.id,u.nome,action,before?JSON.stringify(before):null,after?JSON.stringify(after):null,extra.quantidade??null,extra.observacao??'']);}
-async function locked(c,table,id){const [r]=await c.execute(`SELECT * FROM ${table} WHERE id=? FOR UPDATE`,[String(id??'')]);if(!r[0])throw new InputError('Registro não encontrado.',404);return r[0];}
-export async function readStock(pool){return transaction(pool,async c=>{const [products]=await c.query('SELECT id,nome,preco,quantidade FROM produtos ORDER BY nome');const [movements]=await c.query('SELECT * FROM movimentacoes ORDER BY sequencia DESC');return {products,movements};});}
-export async function readAdmin(pool){await updateAges(pool);const [users]=await pool.query(`SELECT ${fields} FROM usuarios ORDER BY nome`);const [events]=await pool.query('SELECT * FROM auditoria_admin ORDER BY sequencia DESC');return {users,events};}
-export async function saveStock(pool,b,u){return transaction(pool,async c=>{
- if(b.action==='produto'){let p;try{p=productInput(b)}catch(e){throw new InputError(e.message)}const id=randomUUID();await c.execute('INSERT INTO produtos(id,nome,preco,quantidade) VALUES(?,?,?,?)',[id,p.nome,p.preco,p.quantidade]);await audit(c,'movimentacoes',u,id,p.nome,'cadastro',null,p,{quantidade:p.quantidade,observacao:'Cadastro e saldo inicial'});return {ok:true};}
- if(b.action==='reverter')return revert(c,'movimentacoes','produtos',b.id,u);
- const p=await locked(c,'produtos',b.id);const before=snap(p);
- if(b.action==='editar'){let data;try{data=productInput({...b,quantidade:p.quantidade})}catch(e){throw new InputError(e.message)}await c.execute('UPDATE produtos SET nome=?,preco=? WHERE id=?',[data.nome,data.preco,p.id]);await audit(c,'movimentacoes',u,p.id,data.nome,'edicao',before,data);}
- else if(b.action==='excluir'){await audit(c,'movimentacoes',u,p.id,p.nome,'exclusao',before,null);await c.execute('DELETE FROM produtos WHERE id=?',[p.id]);}
- else if(b.action==='movimentar'){let q,stock;try{q=quantity(b.quantidade);stock=balance(p.quantidade,b.tipo,q)}catch(e){throw new InputError(e.message)}const note=String(b.observacao??'').trim();if(note.length>200)throw new InputError('Observação: máximo de 200 caracteres.');await c.execute('UPDATE produtos SET quantidade=? WHERE id=?',[stock,p.id]);await audit(c,'movimentacoes',u,p.id,p.nome,b.tipo,before,{...before,quantidade:stock},{quantidade:q,observacao:note});}
- else throw new InputError('Operação inválida.');return {ok:true};
-});}
-export async function saveAdmin(pool,b,u){if(u.perfil!=='admin')throw new InputError('Acesso restrito ao administrador.',403);return transaction(pool,async c=>{if(b.action==='reverter')return revert(c,'auditoria_admin','usuarios',b.id,u);const p=await locked(c,'usuarios',b.id);if(p.conta_sistema)throw new InputError('A conta principal de administração é protegida.');if(b.action==='excluir'){await audit(c,'auditoria_admin',u,p.id,p.nome,'exclusao',person(p),null);await c.execute('DELETE FROM usuarios WHERE id=?',[p.id]);}else if(b.action==='editar'){let d;try{d=employeeInput(b,today())}catch(e){throw new InputError(e.message)}await c.execute('UPDATE usuarios SET nome=?,cpf=?,telefone=?,email=?,nascimento=?,cargo=?,idade=? WHERE id=?',[d.nome,d.cpf,d.telefone,d.email,d.nascimento,d.cargo,d.idade,p.id]);await audit(c,'auditoria_admin',u,p.id,d.nome,'edicao',person(p),person(d));}else throw new InputError('Operação inválida.');return {ok:true};});}
-async function revert(c,events,table,id,u){const event=await locked(c,events,id);if(event.acao!=='edicao'||event.revertido)throw new InputError('Esta alteração não pode ser revertida.');if(!event.alvo_id)throw new InputError('O registro foi excluído.');const current=await locked(c,table,event.alvo_id),old=parsed(event.antes),next=parsed(event.depois);const keys=table==='produtos'?['nome','preco']:Object.keys(person(current));if(keys.some(k=>String(current[k])!==String(next[k])))throw new InputError('Há alterações posteriores. Reverta primeiro a edição mais recente.',409);
- if(table==='produtos'){await c.execute('UPDATE produtos SET nome=?,preco=? WHERE id=?',[old.nome,old.preco,current.id]);await audit(c,events,u,current.id,old.nome,'reversao',snap(current),{...snap(current),nome:old.nome,preco:old.preco});}
- else{let d;try{d=employeeInput(old,today())}catch(e){throw new InputError(e.message)}await c.execute('UPDATE usuarios SET nome=?,cpf=?,telefone=?,email=?,nascimento=?,cargo=?,idade=? WHERE id=?',[d.nome,d.cpf,d.telefone,d.email,d.nascimento,d.cargo,d.idade,current.id]);await audit(c,events,u,current.id,d.nome,'reversao',person(current),person(d));}
- await c.execute(`UPDATE ${events} SET revertido=1 WHERE id=?`,[id]);return {ok:true};}
+import { randomUUID } from "node:crypto";
+import { validDeletionPassword } from "./deletion.mjs";
+import { transaction } from "./db.mjs";
+import {
+  productInput,
+  employeeInput,
+  quantity,
+  balance,
+} from "../lib/rules.ts";
+import {
+  hashPassword,
+  verifyPassword,
+  tokenHash,
+  newToken,
+  today,
+} from "./auth.mjs";
+export class InputError extends Error {
+  constructor(message, status = 400) {
+    super(message);
+    this.status = status;
+  }
+}
+const fields =
+  "id,nome,cpf,telefone,email,nascimento,cargo,idade,pais,estado,cidade,bairro,perfil,conta_sistema";
+const parsed = (v) => (typeof v === "string" ? JSON.parse(v) : v);
+const snap = (p) =>
+  p ? { nome: p.nome, preco: String(p.preco), quantidade: p.quantidade } : null;
+const person = (p) =>
+  p
+    ? Object.fromEntries(
+        [
+          "nome",
+          "cpf",
+          "telefone",
+          "email",
+          "nascimento",
+          "cargo",
+          "pais",
+          "estado",
+          "cidade",
+          "bairro",
+        ].map((k) => [k, p[k]]),
+      )
+    : null;
+export async function updateAges(pool) {
+  await pool.query(
+    "UPDATE usuarios SET idade=TIMESTAMPDIFF(YEAR,nascimento,DATE(UTC_TIMESTAMP()-INTERVAL 3 HOUR)) WHERE nascimento IS NOT NULL AND idade<>TIMESTAMPDIFF(YEAR,nascimento,DATE(UTC_TIMESTAMP()-INTERVAL 3 HOUR))",
+  );
+}
+export async function sessionUser(pool, token) {
+  if (!token) return null;
+  await updateAges(pool);
+  const [r] = await pool.execute(
+    `SELECT ${fields
+      .split(",")
+      .map((x) => "u." + x)
+      .join(
+        ",",
+      )} FROM sessoes s JOIN usuarios u ON u.id=s.usuario_id WHERE s.token_hash=? AND s.expira_em>UTC_TIMESTAMP()`,
+    [tokenHash(token)],
+  );
+  return r[0] ?? null;
+}
+export async function register(pool, b) {
+  let data, hash;
+  try {
+    data = employeeInput(b, today());
+    hash = await hashPassword(b.senha);
+  } catch (e) {
+    throw new InputError(e.message);
+  }
+  return transaction(pool, async (c) => {
+    const id = randomUUID();
+    await c.execute(
+      "INSERT INTO usuarios(id,nome,cpf,telefone,email,nascimento,cargo,idade,pais,estado,cidade,bairro,senha_hash) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      [
+        id,
+        ...Object.values(data).slice(0, 6),
+        data.idade,
+        data.pais,
+        data.estado,
+        data.cidade,
+        data.bairro,
+        hash,
+      ],
+    );
+    await audit(
+      c,
+      "auditoria_admin",
+      { id, nome: data.nome, email: data.email },
+      id,
+      data.nome,
+      "cadastro",
+      null,
+      data,
+    );
+    return { ok: true };
+  });
+}
+export async function login(pool, b) {
+  const [rows] = await pool.execute("SELECT * FROM usuarios WHERE email=?", [
+    String(b.email ?? "")
+      .trim()
+      .toLowerCase(),
+  ]);
+  const u = rows[0];
+  if (!u || !(await verifyPassword(b.senha, u.senha_hash)))
+    throw new InputError("E-mail ou senha incorretos.", 401);
+  const token = newToken();
+  await pool.execute(
+    "INSERT INTO sessoes(token_hash,usuario_id,expira_em) VALUES(?,?,UTC_TIMESTAMP()+INTERVAL 8 HOUR)",
+    [tokenHash(token), u.id],
+  );
+  return { token };
+}
+export async function logout(pool, token) {
+  if (token)
+    await pool.execute("DELETE FROM sessoes WHERE token_hash=?", [
+      tokenHash(token),
+    ]);
+  return { ok: true };
+}
+async function audit(c, table, u, id, name, action, before, after, extra = {}) {
+  await c.execute(
+    `INSERT INTO ${table}(id,alvo_id,alvo_nome,alvo_ref,usuario_id,usuario_nome,usuario_email,acao,antes,depois,quantidade,observacao) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`,
+    [
+      randomUUID(),
+      id,
+      name,
+      id,
+      u.id,
+      u.nome,
+      u.email ?? null,
+      action,
+      before ? JSON.stringify(before) : null,
+      after ? JSON.stringify(after) : null,
+      extra.quantidade ?? null,
+      extra.observacao ?? "",
+    ],
+  );
+}
+async function locked(c, table, id) {
+  const [r] = await c.execute(`SELECT * FROM ${table} WHERE id=? FOR UPDATE`, [
+    String(id ?? ""),
+  ]);
+  if (!r[0]) throw new InputError("Registro não encontrado.", 404);
+  return r[0];
+}
+export async function readStock(pool) {
+  return transaction(pool, async (c) => {
+    const [products] = await c.query(
+      "SELECT id,nome,preco,quantidade FROM produtos ORDER BY nome",
+    );
+    const [movements] = await c.query(
+      "SELECT * FROM movimentacoes ORDER BY sequencia DESC",
+    );
+    return { products, movements };
+  });
+}
+export async function readAdmin(pool) {
+  await updateAges(pool);
+  const [users] = await pool.query(
+    `SELECT ${fields} FROM usuarios ORDER BY nome`,
+  );
+  const [events] = await pool.query(
+    "SELECT * FROM auditoria_admin ORDER BY sequencia DESC",
+  );
+  return { users, events };
+}
+export async function saveStock(pool, b, u) {
+  if (b.action === "excluir" && !validDeletionPassword(b.senha_exclusao))
+    throw new InputError("Senha de exclusão incorreta. O produto não foi excluído.", 403);
+  return transaction(pool, async (c) => {
+    if (b.action === "produto") {
+      let p;
+      try {
+        p = productInput(b);
+      } catch (e) {
+        throw new InputError(e.message);
+      }
+      const id = randomUUID();
+      await c.execute(
+        "INSERT INTO produtos(id,nome,preco,quantidade) VALUES(?,?,?,?)",
+        [id, p.nome, p.preco, p.quantidade],
+      );
+      await audit(c, "movimentacoes", u, id, p.nome, "cadastro", null, p, {
+        quantidade: p.quantidade,
+        observacao: "Cadastro e saldo inicial",
+      });
+      return { ok: true };
+    }
+    if (b.action === "reverter")
+      return revert(c, "movimentacoes", "produtos", b.id, u);
+    const p = await locked(c, "produtos", b.id);
+    const before = snap(p);
+    if (b.action === "editar") {
+      let data;
+      try {
+        data = productInput({ ...b, quantidade: p.quantidade });
+      } catch (e) {
+        throw new InputError(e.message);
+      }
+      await c.execute("UPDATE produtos SET nome=?,preco=? WHERE id=?", [
+        data.nome,
+        data.preco,
+        p.id,
+      ]);
+      await audit(
+        c,
+        "movimentacoes",
+        u,
+        p.id,
+        data.nome,
+        "edicao",
+        before,
+        data,
+      );
+    } else if (b.action === "excluir") {
+      await audit(
+        c,
+        "movimentacoes",
+        u,
+        p.id,
+        p.nome,
+        "exclusao",
+        before,
+        null,
+      );
+      await c.execute("DELETE FROM produtos WHERE id=?", [p.id]);
+    } else if (b.action === "movimentar") {
+      let q, stock;
+      try {
+        q = quantity(b.quantidade);
+        stock = balance(p.quantidade, b.tipo, q);
+      } catch (e) {
+        throw new InputError(e.message);
+      }
+      const note = String(b.observacao ?? "").trim();
+      if (note.length > 200)
+        throw new InputError("Observação: máximo de 200 caracteres.");
+      await c.execute("UPDATE produtos SET quantidade=? WHERE id=?", [
+        stock,
+        p.id,
+      ]);
+      await audit(
+        c,
+        "movimentacoes",
+        u,
+        p.id,
+        p.nome,
+        b.tipo,
+        before,
+        { ...before, quantidade: stock },
+        { quantidade: q, observacao: note },
+      );
+    } else throw new InputError("Operação inválida.");
+    return { ok: true };
+  });
+}
+export async function saveAdmin(pool, b, u) {
+  if (u.perfil !== "admin")
+    throw new InputError("Acesso restrito ao administrador.", 403);
+  return transaction(pool, async (c) => {
+    if (b.action === "reverter")
+      return revert(c, "auditoria_admin", "usuarios", b.id, u);
+    const p = await locked(c, "usuarios", b.id);
+    if (p.conta_sistema)
+      throw new InputError("A conta principal de administração é protegida.");
+    if (b.action === "excluir") {
+      await audit(
+        c,
+        "auditoria_admin",
+        u,
+        p.id,
+        p.nome,
+        "exclusao",
+        person(p),
+        null,
+      );
+      await c.execute("DELETE FROM usuarios WHERE id=?", [p.id]);
+    } else if (b.action === "editar") {
+      let d;
+      try {
+        d = employeeInput(b, today());
+      } catch (e) {
+        throw new InputError(e.message);
+      }
+      await c.execute(
+        "UPDATE usuarios SET nome=?,cpf=?,telefone=?,email=?,nascimento=?,cargo=?,idade=?,pais=?,estado=?,cidade=?,bairro=? WHERE id=?",
+        [
+          d.nome,
+          d.cpf,
+          d.telefone,
+          d.email,
+          d.nascimento,
+          d.cargo,
+          d.idade,
+          d.pais,
+          d.estado,
+          d.cidade,
+          d.bairro,
+          p.id,
+        ],
+      );
+      await audit(
+        c,
+        "auditoria_admin",
+        u,
+        p.id,
+        d.nome,
+        "edicao",
+        person(p),
+        person(d),
+      );
+    } else throw new InputError("Operação inválida.");
+    return { ok: true };
+  });
+}
+async function revert(c, events, table, id, u) {
+  const event = await locked(c, events, id);
+  if (event.acao !== "edicao" || event.revertido)
+    throw new InputError("Esta alteração não pode ser revertida.");
+  if (!event.alvo_id) throw new InputError("O registro foi excluído.");
+  const current = await locked(c, table, event.alvo_id),
+    old = parsed(event.antes),
+    next = parsed(event.depois);
+  const keys =
+    table === "produtos" ? ["nome", "preco"] : Object.keys(person(current));
+  if (keys.some((k) => String(current[k]??'') !== String(next[k]??'')))
+    throw new InputError(
+      "Há alterações posteriores. Reverta primeiro a edição mais recente.",
+      409,
+    );
+  if (table === "produtos") {
+    await c.execute("UPDATE produtos SET nome=?,preco=? WHERE id=?", [
+      old.nome,
+      old.preco,
+      current.id,
+    ]);
+    await audit(c, events, u, current.id, old.nome, "reversao", snap(current), {
+      ...snap(current),
+      nome: old.nome,
+      preco: old.preco,
+    });
+  } else {
+    let d;
+    try {
+      d = employeeInput(old, today(), true);
+    } catch (e) {
+      throw new InputError(e.message);
+    }
+    await c.execute(
+      "UPDATE usuarios SET nome=?,cpf=?,telefone=?,email=?,nascimento=?,cargo=?,idade=?,pais=?,estado=?,cidade=?,bairro=? WHERE id=?",
+      [
+        d.nome,
+        d.cpf,
+        d.telefone,
+        d.email,
+        d.nascimento,
+        d.cargo,
+        d.idade,
+        d.pais,
+        d.estado,
+        d.cidade,
+        d.bairro,
+        current.id,
+      ],
+    );
+    await audit(
+      c,
+      events,
+      u,
+      current.id,
+      d.nome,
+      "reversao",
+      person(current),
+      person(d),
+    );
+  }
+  await c.execute(`UPDATE ${events} SET revertido=1 WHERE id=?`, [id]);
+  return { ok: true };
+}

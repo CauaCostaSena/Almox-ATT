@@ -1,9 +1,206 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {chromium} from 'playwright';import {spawn} from 'node:child_process';import {mkdir} from 'node:fs/promises';import {createPool} from '../server/db.mjs';
-if(!process.env.DB_NAME?.endsWith('_testes'))throw Error('Use somente base terminada em _testes.');
-const pool=createPool();let server,browser,page;const origin='http://127.0.0.1:3101';const errors=[];
-test.before(async()=>{await pool.query('DELETE FROM movimentacoes');await pool.query('DELETE FROM auditoria_admin');await pool.query('DELETE FROM produtos');await pool.query('DELETE FROM usuarios WHERE conta_sistema=0');await mkdir('evidencias',{recursive:true});server=spawn(process.execPath,['--experimental-strip-types','server/index.mjs'],{env:{...process.env,PORT:'3101'},stdio:'inherit'});for(let i=0;i<50;i++){try{await fetch(origin);break}catch{await new Promise(r=>setTimeout(r,100))}}browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});page=await browser.newPage({viewport:{width:1440,height:1000}});page.setDefaultTimeout(7000);page.on('pageerror',e=>errors.push(e.message));});
-test.after(async()=>{await browser?.close();server?.kill();await pool.end()});
-test('TS01 login obrigatório e cadastro com validações',async()=>{assert.equal((await fetch(origin+'/api/estoque')).status,401);await page.goto(origin);await page.getByRole('heading',{name:'Acesse sua conta'}).waitFor();await page.screenshot({path:'evidencias/TS01-login.png',fullPage:true});await page.getByRole('button',{name:'Primeiro acesso? Cadastre-se'}).click();await page.getByLabel('Nome',{exact:true}).fill('Maria Teste');await page.getByLabel('CPF',{exact:true}).fill('52998224725');await page.getByLabel('Telefone').fill('11999999999');await page.getByLabel('E-mail',{exact:true}).fill('maria@gmail.com');await page.getByLabel('Data de nascimento').fill('2000-01-01');await page.getByLabel('Cargo').fill('Estoquista');await page.getByLabel('Senha',{exact:true}).fill('senha123');await page.getByRole('button',{name:'Criar conta'}).click();await page.getByRole('alert').filter({hasText:'@almox.est'}).waitFor();await page.getByLabel('E-mail',{exact:true}).fill('maria@almox.est');await page.getByRole('button',{name:'Criar conta'}).click();await page.getByRole('heading',{name:'Acesse sua conta'}).waitFor();await page.getByLabel('Senha',{exact:true}).fill('senha123');await page.getByRole('button',{name:'Entrar',exact:true}).click();await page.getByRole('heading',{name:'Estoque organizado.'}).waitFor();assert.equal(await page.getByRole('button',{name:'Funcionários',exact:true}).count(),0);assert.equal(await page.evaluate(async()=> (await fetch('/api/admin')).status),403);});
-test('TS02 produto em reais, saída inválida e limite exato',async()=>{await page.getByRole('button',{name:'Novo produto'}).click();await page.getByLabel('Nome',{exact:true}).fill('Mouse de teste');await page.getByLabel('Preço unitário').fill('2000');assert.equal(await page.getByLabel('Preço unitário').inputValue(),'R$20,00');await page.getByLabel('Quantidade inicial').fill('10');await page.getByRole('button',{name:'Salvar',exact:true}).click();await page.getByRole('cell',{name:'R$20,00',exact:true}).waitFor();await page.getByRole('button',{name:'Movimentar Mouse de teste'}).click();await page.getByRole('combobox').selectOption('saida');await page.getByLabel('Quantidade',{exact:true}).fill('11');await page.getByRole('button',{name:'Salvar',exact:true}).click();await page.getByRole('dialog').getByRole('alert').filter({hasText:'Estoque insuficiente'}).waitFor();await page.screenshot({path:'evidencias/TS02-saida-invalida.png'});await page.getByLabel('Quantidade',{exact:true}).fill('10');await page.getByRole('button',{name:'Salvar',exact:true}).click();await page.getByRole('cell',{name:'0 un.',exact:true}).waitFor();const [r]=await pool.query("SELECT preco,quantidade FROM produtos WHERE nome='Mouse de teste'");assert.equal(r[0].preco,'20.00');assert.equal(r[0].quantidade,0);await page.reload();await page.getByRole('cell',{name:'Mouse de teste',exact:true}).waitFor();});
-test('TS03 edição, reversão e exclusão preservando histórico',async()=>{await page.getByRole('button',{name:'Editar Mouse de teste'}).click();await page.getByLabel('Nome',{exact:true}).fill('Mouse alterado');await page.getByRole('button',{name:'Salvar',exact:true}).click();await page.getByRole('button',{name:'Confirmar',exact:true}).click();await page.getByRole('cell',{name:'Mouse alterado',exact:true}).waitFor();await page.getByRole('button',{name:'Movimentações',exact:true}).click();await page.getByRole('button',{name:'Reverter edição',exact:true}).click();await page.getByRole('button',{name:'Confirmar',exact:true}).click();await page.getByText('Edição revertida',{exact:true}).waitFor();await page.getByRole('button',{name:'Produtos',exact:true}).click();await page.getByRole('button',{name:'Excluir Mouse de teste'}).click();await page.getByText('Tem certeza que deseja realizar essa exclusão? Não será possível reverter essa ação!',{exact:true}).waitFor();await page.getByRole('button',{name:'Confirmar',exact:true}).click();await page.getByRole('heading',{name:'Seu estoque começa aqui'}).waitFor();await page.getByRole('button',{name:'Movimentações',exact:true}).click();await page.getByText('Exclusão',{exact:true}).waitFor();assert.ok(await page.getByText('Maria Teste',{exact:true}).count()>0);await page.screenshot({path:'evidencias/TS03-historico.png',fullPage:true});});
-test('TS04 administrador altera e exclui funcionário com auditoria',async()=>{await page.getByRole('button',{name:'Sair da conta'}).click();await page.getByLabel('E-mail',{exact:true}).fill('admin@almox.est');await page.getByLabel('Senha',{exact:true}).fill('#adm321');await page.getByRole('button',{name:'Entrar',exact:true}).click();await page.getByRole('button',{name:'Funcionários',exact:true}).click();await page.getByRole('button',{name:'Editar Maria Teste'}).click();await page.getByLabel('Nome',{exact:true}).fill('Maria Souza');await page.getByRole('button',{name:'Salvar',exact:true}).click();await page.getByRole('button',{name:'Confirmar',exact:true}).click();await page.getByRole('button',{name:'Excluir Maria Souza'}).waitFor();await page.getByRole('button',{name:'Movimentações de admin',exact:true}).click();await page.getByRole('button',{name:'Reverter edição',exact:true}).click();await page.getByRole('button',{name:'Confirmar',exact:true}).click();await page.getByText('Edição revertida',{exact:true}).waitFor();await page.getByRole('button',{name:'Funcionários',exact:true}).click();await page.getByRole('button',{name:'Excluir Maria Teste'}).click();await page.getByRole('button',{name:'Confirmar',exact:true}).click();await page.getByRole('button',{name:'Movimentações de admin',exact:true}).click();await page.getByText('Exclusão',{exact:true}).waitFor();await page.screenshot({path:'evidencias/TS04-admin.png',fullPage:true});await page.setViewportSize({width:390,height:844});await page.screenshot({path:'evidencias/TS04-mobile.png',fullPage:true});assert.deepEqual(errors,[]);});
+import test from "node:test";
+import assert from "node:assert/strict";
+import { chromium } from "playwright";
+import { spawn } from "node:child_process";
+import { mkdir } from "node:fs/promises";
+import { createPool } from "../server/db.mjs";
+if (!process.env.DB_NAME?.endsWith("_testes"))
+  throw Error("Use somente base terminada em _testes.");
+const pool = createPool();
+let server, browser, page;
+const origin = "http://127.0.0.1:3101";
+const errors = [];
+test.before(async () => {
+  await pool.query("DELETE FROM movimentacoes");
+  await pool.query("DELETE FROM auditoria_admin");
+  await pool.query("DELETE FROM produtos");
+  await pool.query("DELETE FROM usuarios WHERE conta_sistema=0");
+  await mkdir("test-results", { recursive: true });
+  server = spawn(
+    process.execPath,
+    ["--experimental-strip-types", "server/index.mjs"],
+    { env: { ...process.env, PORT: "3101" }, stdio: "inherit" },
+  );
+  for (let i = 0; i < 50; i++) {
+    try {
+      await fetch(origin);
+      break;
+    } catch {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
+  browser = await chromium.launch({
+    headless: true,
+    executablePath: process.env.CHROMIUM_PATH || undefined,
+    args: ["--no-sandbox"],
+  });
+  page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  page.setDefaultTimeout(7000);
+  page.on("pageerror", (e) => errors.push(e.message));
+});
+test.after(async () => {
+  await browser?.close();
+  server?.kill();
+  await pool.end();
+});
+test("TS01 login obrigatório e cadastro com validações", async () => {
+  assert.equal((await fetch(origin + "/api/estoque")).status, 401);
+  await page.goto(origin);
+  await page.getByRole("heading", { name: "Acesse sua conta" }).waitFor();
+  await page.screenshot({
+    path: "test-results/TS01-login.png",
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Primeiro acesso? Cadastre-se" })
+    .click();
+  await page.getByLabel("Nome", { exact: true }).fill("Maria Teste");
+  const country = page.getByRole("combobox", { name: "País", exact: true });
+  const state = page.getByRole("combobox", { name: "Estado", exact: true });
+  assert.equal(await country.evaluate((el) => el.tagName), "SELECT");
+  assert.equal(await state.evaluate((el) => el.tagName), "SELECT");
+  assert.equal(await state.locator("option").count(), 28);
+  await page.getByLabel("CPF", { exact: true }).fill("52998224725");
+  assert.equal(await page.getByLabel('CPF',{exact:true}).getAttribute('maxlength'),'14');
+  await page.getByLabel("Telefone").fill("11999999999");
+  await page.getByLabel("E-mail", { exact: true }).fill("maria@gmail.com");
+  await page.getByLabel("Data de nascimento").fill("2000-01-01");
+  await page
+    .getByRole("combobox", { name: "Estado", exact: true })
+    .selectOption("BA");
+  await page
+    .getByRole("combobox", { name: "Cidade", exact: true })
+    .selectOption("Salvador");
+  await page.getByLabel("Bairro", { exact: true }).fill("Centro");
+  await page.getByLabel("Cargo").fill("Estoquista");
+  await page.getByLabel("Senha", { exact: true }).fill("senha123");
+  await page.getByRole("button", { name: "Criar conta" }).click();
+  await page.getByRole("alert").filter({ hasText: "@almox.est" }).waitFor();
+  await page.getByLabel("E-mail", { exact: true }).fill("maria@almox.est");
+  await page.getByRole("button", { name: "Criar conta" }).click();
+  await page.getByRole("heading", { name: "Acesse sua conta" }).waitFor();
+  await page.getByLabel("Senha", { exact: true }).fill("senha123");
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await page.getByRole("heading", { name: "Estoque organizado." }).waitFor();
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Funcionários", exact: true })
+      .count(),
+    0,
+  );
+  assert.equal(
+    await page.evaluate(async () => (await fetch("/api/admin")).status),
+    403,
+  );
+});
+test("TS02 produto em reais, saída inválida e limite exato", async () => {
+  await page.getByRole("button", { name: "Novo produto" }).click();
+  await page.getByLabel("Nome", { exact: true }).fill("Mouse de teste");
+  await page.getByLabel("Preço unitário").fill("2000");
+  assert.equal(await page.getByLabel("Preço unitário").inputValue(), "R$20,00");
+  await page.getByLabel("Quantidade inicial").fill("10");
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
+  await page.getByRole("cell", { name: "R$20,00", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Movimentar Mouse de teste" }).click();
+  await page.getByRole("combobox").selectOption("saida");
+  await page.getByLabel("Quantidade", { exact: true }).fill("11");
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("alert")
+    .filter({ hasText: "Estoque insuficiente" })
+    .waitFor();
+  await page.screenshot({ path: "test-results/TS02-saida-invalida.png" });
+  await page.getByLabel("Quantidade", { exact: true }).fill("10");
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
+  await page.getByRole("cell", { name: "0 un.", exact: true }).waitFor();
+  const [r] = await pool.query(
+    "SELECT preco,quantidade FROM produtos WHERE nome='Mouse de teste'",
+  );
+  assert.equal(r[0].preco, "20.00");
+  assert.equal(r[0].quantidade, 0);
+  await page.reload();
+  await page
+    .getByRole("cell", { name: "Mouse de teste", exact: true })
+    .waitFor();
+});
+test("TS03 edição, reversão e exclusão preservando histórico", async () => {
+  await page.getByRole("button", { name: "Editar Mouse de teste" }).click();
+  await page.getByLabel("Nome", { exact: true }).fill("Mouse alterado");
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar", exact: true }).click();
+  await page
+    .getByRole("cell", { name: "Mouse alterado", exact: true })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Movimentações", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Reverter edição", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Confirmar", exact: true }).click();
+  await page.getByText("Edição revertida", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Produtos", exact: true }).click();
+  await page.getByRole("button", { name: "Excluir Mouse de teste" }).click();
+  assert.equal(await page.locator('.danger-warning').evaluate(el=>getComputedStyle(el).color),'rgb(180, 35, 24)');
+  await page.getByRole('button',{name:'Cancelar',exact:true}).click();
+  await page.getByRole('cell',{name:'Mouse de teste',exact:true}).waitFor();
+  await page.getByRole("button", { name: "Excluir Mouse de teste" }).click();
+  await page
+    .getByText(
+      "Tem certeza que deseja realizar essa exclusão? Não será possível reverter essa ação!",
+      { exact: true },
+    )
+    .waitFor();
+  await page.getByLabel("Senha para excluir produto").fill("#DeleAll42");
+  await page.getByRole("button", { name: "Confirmar", exact: true }).click();
+  await page
+    .getByRole("heading", { name: "Seu estoque começa aqui" })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Movimentações", exact: true })
+    .click();
+  await page.getByText("Exclusão", { exact: true }).waitFor();
+  assert.ok((await page.getByText("maria@almox.est", { exact: true }).count()) > 0);
+  await page.screenshot({
+    path: "test-results/TS03-historico.png",
+    fullPage: true,
+  });
+});
+test("TS04 administrador altera e exclui funcionário com auditoria", async () => {
+  await page.getByRole("button", { name: "Sair da conta" }).click();
+  await page.getByLabel("E-mail", { exact: true }).fill("admin@almox.est");
+  await page.getByLabel("Senha", { exact: true }).fill("admin$777");
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await page.getByRole("button", { name: "Funcionários", exact: true }).click();
+  await page.getByRole("button", { name: "Editar Maria Teste" }).click();
+  await page.getByLabel("Nome", { exact: true }).fill("Maria Souza");
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar", exact: true }).click();
+  await page.getByRole("button", { name: "Excluir Maria Souza" }).waitFor();
+  await page
+    .getByRole("button", { name: "Movimentações de admin", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Reverter edição", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Confirmar", exact: true }).click();
+  await page.getByText("Edição revertida", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Funcionários", exact: true }).click();
+  await page.getByRole("button", { name: "Excluir Maria Teste" }).click();
+  await page.getByRole("button", { name: "Confirmar", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Movimentações de admin", exact: true })
+    .click();
+  await page.getByText("Exclusão", { exact: true }).waitFor();
+  await page.screenshot({
+    path: "test-results/TS04-admin.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: "test-results/TS04-mobile.png",
+    fullPage: true,
+  });
+  assert.deepEqual(errors, []);
+});

@@ -1,0 +1,128 @@
+Almox 3.2.0 — execução de testes em 19/10/2026
+
+OBJETIVO
+Verificar o build e executar as suítes automatizadas relacionadas ao roteiro
+de testes do Almox. Os testes que usam MySQL foram direcionados exclusivamente
+à base almox_testes.
+
+PREPARAÇÃO E AMBIENTE
+- Projeto: almox-3-2, Node.js v24.13.1.
+- Dependências: npm install instalou 140 pacotes.
+- Aviso de dependências: npm informou 1 vulnerabilidade de severidade alta.
+  Não foi executado npm audit fix nem alteradas dependências para remediá-la.
+- Configuração local: não havia arquivo .env nem .env.test.
+  Não foi criado arquivo de configuração. As variáveis DB_HOST, DB_PORT,
+  DB_NAME, DB_USER e DB_PASSWORD foram definidas somente no processo PowerShell
+  de cada execução dos testes com banco.
+- MySQL: o serviço Windows MySQL80 estava parado. A imagem fornecida pela
+  equipe mostrou o MySQL do XAMPP em execução na porta 3306. A conexão local
+  foi confirmada pelo mysql.exe distribuído com o XAMPP.
+- Banco selecionado: almox_testes. A consulta de verificação confirmou sua
+  existência e encontrou as tabelas auditoria_admin, movimentacoes, produtos,
+  produtos_formatados, sessoes e usuarios.
+- Segurança dos dados: as suítes de banco removem dados da base antes de
+  executar. A equipe confirmou explicitamente que almox_testes continha apenas
+  dados descartáveis e autorizou a limpeza. O banco almox não foi usado.
+
+RESULTADOS
+
+1. Build
+Comando: npm run build
+Resultado: aprovado, código de saída 0.
+TypeScript concluiu sem erros; Vite compilou 1906 módulos e gerou a aplicação.
+
+2. Testes unitários e de serviço
+Comando: npm test
+Resultado final: aprovado, 6 testes passaram, 0 falharam.
+Casos reportados: TU01 preço; TU02 quantidade e saldo; TU03 idade, CPF e
+cadastro inválido; TU04 rollback e liberação de conexão; TU05 hash de senha;
+TU06 país e estado.
+
+Observação da primeira execução: antes de npm install, a suíte falhou ao
+carregar mysql2 em tests/service.test.mjs porque as dependências não estavam
+instaladas. Após instalar, npm test passou. npm test foi executado novamente
+no fim da validação e passou.
+
+3. Testes específicos da versão 3.2
+Comando: npm run test:changes
+Resultado: aprovado, 12 testes passaram, 0 falharam.
+Cobertura reportada: máscaras de CPF/telefone, CPF fictício, data de
+nascimento futura, cidade/UF/bairro, sugestão de DDD, busca, senha de exclusão,
+preservação de referências e e-mail, cadastro, recuperação da conta principal,
+métricas e edição de funcionário.
+Esta suíte usa conexões simuladas; não comprova persistência em MySQL.
+
+4. Testes de integração MySQL
+Comando: npm run test:integration
+Resultado: aprovado, 4 testes passaram, 0 falharam, usando almox_testes.
+Casos reportados:
+- TI01 persistência do produto/preço, chave estrangeira e autenticação;
+- TI02 rollback quando ocorre falha ao inserir o histórico;
+- TI03 saídas simultâneas, edição/reversão e exclusão com histórico preservado;
+- TI04 cadastro, auditoria administrativa, idade e revogação de sessão.
+
+5. Testes de sistema no navegador
+Comando: npm run test:system
+Resultado inicial: 4 testes falharam porque os localizadores Playwright
+getByLabel não encontraram os campos de seleção País, Estado e Cidade. Os
+casos seguintes também falharam em cascata, pois dependiam do cadastro/login
+que não chegou a completar.
+
+Investigação: o formulário foi aberto no navegador e os campos País, Estado
+e Cidade estavam renderizados com nomes acessíveis. A busca por papel
+combobox localizou os campos corretamente. A falha estava nos seletores dos
+testes, não na ausência dos campos na interface.
+
+Correção: em tests/system.test.mjs, os testes passaram a localizar os selects
+por getByRole("combobox", { name: ..., exact: true }). Nenhum código da
+aplicação foi alterado.
+
+Resultado após a correção: aprovado, 4 testes passaram, 0 falharam:
+- TS01 login obrigatório e cadastro com validações;
+- TS02 produto em reais, saída inválida e limite exato;
+- TS03 edição, reversão e exclusão preservando histórico;
+- TS04 administração de funcionário e auditoria.
+
+6. Testes de aceitação automatizados
+Comando: npm run test:acceptance
+Resultado inicial: TA01 e TA02 passaram; TA03 falhou pelo mesmo uso de
+getByLabel para os campos Estado e Cidade.
+
+Correção: em tests/acceptance.test.mjs, os selects passaram a ser localizados
+por getByRole("combobox", { name: ..., exact: true }). Nenhum código da
+aplicação foi alterado.
+
+Resultado após a correção: aprovado, 3 testes passaram, 0 falharam:
+- TA01 uso do estoque por funcionário;
+- TA02 histórico, reversão e autoria;
+- TA03 administração de equipe e restrição de acesso.
+
+ARQUIVOS ALTERADOS OU GERADOS
+- Alterado: tests/system.test.mjs — seletores dos campos select.
+- Alterado: tests/acceptance.test.mjs — seletores dos campos select.
+- As capturas usadas como evidência foram copiadas para
+  docs/validacao-3-2/evidencias/: TS01-login.png,
+  TS02-saida-invalida.png, TS03-historico.png, TS04-admin.png,
+  TS04-mobile.png, TA01-controle-reais.png,
+  TA02-historico-reversao.png e TA03-admin-seguranca.png.
+- Os arquivos originais em test-results/ são saídas locais ignoradas pelo Git;
+  a cópia em docs/validacao-3-2/evidencias/ é a versão preservada no projeto.
+- Não foi criado .env.test; a configuração de conexão não foi persistida.
+- Não foi alterado o código-fonte da aplicação.
+
+LIMITES EM RELAÇÃO AO ROTEIRO DA EQUIPE
+- Os testes automatizados cobrem fluxos correspondentes a cadastro/acesso,
+  estoque, histórico, administração, transações e concorrência. Não equivalem
+  ao preenchimento e assinatura formal das fichas da equipe.
+- A avaliação de aceitação exigida pelo roteiro deve ser feita e registrada
+  por outro grupo. Os testes TA automatizados não substituem essa validação.
+- O caso adicional de aceitação sobre fechar e reabrir o sistema foi coberto
+  parcialmente por persistência no banco e recarregamento da página, mas não
+  por uma avaliação formal externa após fechar e reabrir.
+- TS04 gerou uma captura em viewport de 390x844 (TS04-mobile.png), mas não
+  houve assertiva automatizada de legibilidade ou usabilidade móvel; portanto,
+  a validação mobile do roteiro continua pendente.
+- O roteiro pede pelo menos 12 casos executados, distribuídos por níveis. Os
+  resultados acima documentam execuções automatizadas, não a aprovação dos
+  cenários manuais CE01 a CE15 nem o registro oficial de evidências por
+  integrante.
